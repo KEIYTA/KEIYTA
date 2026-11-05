@@ -1,16 +1,20 @@
-## Hi there 👋
+# KEIYTA
 
-<!--
-**KEIYTA/KEIYTA** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+KEIYTA est un studio en construction pour imaginer et créer des vidéos avec l’intelligence artificielle.
 
-Here are some ideas to get you started:
+Cette première version pose les bases de l’application : une page d’accueil en français, une direction visuelle sombre et violette, et une maquette de l’atelier.
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Démarrer en local
+
+Il faut Node.js 20.9 ou une version plus récente.
+
+```bash
+npm install
+npm run dev
+```
+
+Ouvrir ensuite [http://localhost:3000](http://localhost:3000).
+
+## État actuel
+
+L’atelier est une maquette d’interface. Aucun compte payant, service externe, clé API ou outil de génération vidéo n’est configuré.
