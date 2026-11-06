@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
 const projects = [
@@ -15,6 +15,20 @@ function Logo() {
 
 type Scene = { title: string; description: string; camera: string; sound: string; version: number };
 type Storyboard = { title: string; logline: string; mood: string; scenes: Scene[] };
+type SavedProject = { version: 1; prompt: string; storyboard: Storyboard | null; validated: boolean };
+const STORAGE_KEY = "keiyta:storyboard-project:v1";
+
+function isSavedProject(value: unknown): value is SavedProject {
+  if (!value || typeof value !== "object") return false;
+  const saved = value as Partial<SavedProject>;
+  if (saved.version !== 1 || typeof saved.prompt !== "string" || typeof saved.validated !== "boolean") return false;
+  if (saved.storyboard === null) return true;
+  const board = saved.storyboard as Storyboard;
+  return Boolean(board && typeof board.title === "string" && typeof board.logline === "string" &&
+    typeof board.mood === "string" && Array.isArray(board.scenes) && board.scenes.every((scene) =>
+      scene && typeof scene.title === "string" && typeof scene.description === "string" &&
+      typeof scene.camera === "string" && typeof scene.sound === "string" && Number.isInteger(scene.version)));
+}
 
 function buildStoryboard(prompt: string): Storyboard {
   const cleaned = prompt.trim().replace(/\s+/g, " ");
@@ -40,6 +54,47 @@ export default function Home() {
   const [error, setError] = useState("");
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null);
   const [validated, setValidated] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    let restored: SavedProject | null = null;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved: unknown = JSON.parse(raw);
+        if (isSavedProject(saved)) restored = saved;
+      }
+    } catch {
+      // Storage can be unavailable or contain malformed JSON; keep the app usable.
+    }
+    queueMicrotask(() => {
+      if (restored) {
+        setPrompt(restored.prompt);
+        setStoryboard(restored.storyboard);
+        setValidated(restored.storyboard ? restored.validated : false);
+      }
+      setHydrated(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, prompt, storyboard, validated } satisfies SavedProject));
+    } catch {
+      // Quota and privacy settings should not prevent editing the storyboard.
+    }
+  }, [hydrated, prompt, storyboard, validated]);
+
+  function startNewProject() {
+    setPrompt("");
+    setError("");
+    setStoryboard(null);
+    setValidated(false);
+    if (hydrated) {
+      try { window.localStorage.removeItem(STORAGE_KEY); } catch { /* Keep the reset usable if storage is unavailable. */ }
+    }
+  }
   function updateScene(index: number, field: "description" | "camera" | "sound", value: string) {
     setStoryboard((current) => current && ({ ...current, scenes: current.scenes.map((scene, sceneIndex) => sceneIndex === index ? { ...scene, [field]: value } : scene) }));
     setValidated(false);
@@ -93,7 +148,7 @@ export default function Home() {
       <section className="atelier wrap" id="atelier">
         <div className="section-heading"><div><div className="eyebrow muted">VOTRE ESPACE DE CRÉATION</div><h2>Qu’allez-vous <span>imaginer&nbsp;?</span></h2></div><span className="step-label">01 <i>/</i> 03</span></div>
         <form className="prompt-card" onSubmit={handlePrepare}>
-          <div className="prompt-top"><span className="prompt-dot"/> NOUVEAU PROJET <span className="draft-pill">BROUILLON</span></div>
+          <div className="prompt-top"><span className="prompt-dot"/> NOUVEAU PROJET {storyboard || prompt ? <button className="new-project-btn" type="button" onClick={startNewProject}>＋ Nouveau projet</button> : <span className="draft-pill">BROUILLON</span>}</div>
           <div className="prompt-content"><span className="prompt-symbol" aria-hidden="true">✳</span><div className="prompt-field"><label className="sr-only" htmlFor="film-prompt">Décrivez votre idée de film</label><textarea id="film-prompt" value={prompt} onChange={(event) => { setPrompt(event.target.value); if (error) setError(""); }} placeholder="Décrivez la scène que vous voyez dans votre tête…" aria-describedby={error ? "prompt-error" : "prompt-hint"} aria-invalid={Boolean(error)} /><small id="prompt-hint">Un lieu, une ambiance, un mouvement — tout commence par quelques mots.</small></div></div>
           {error && <p className="form-error" id="prompt-error" role="alert">{error}</p>}
           <div className="prompt-bottom"><div className="prompt-tags"><span>✦ Idée libre</span><span>▣ Format vidéo</span></div><button className="create-btn" type="submit">Préparer mon film <span>↗</span></button></div>
