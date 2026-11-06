@@ -27,7 +27,7 @@ function buildStoryboard(prompt: string): Storyboard {
     logline: `Un film court autour de « ${cleaned} », qui invite à découvrir une histoire ${setting}.`,
     mood: isNature ? "Contemplatif · organique · lumineux" : isCity ? "Cinématographique · contrasté · nocturne" : "Cinématographique · sensible · immersif",
     scenes: [
-      { title: "L’ouverture", image: `Un premier plan installe ${setting}. La lumière révèle peu à peu les détails et donne envie d’entrer dans la scène.`, camera: "Plan large, lent travelling avant", sound: "Ambiance douce, quelques sons du lieu" },
+      { title: "L’ouverture", image: `Un premier plan nous plonge ${setting}. La lumière révèle peu à peu les détails et donne envie d’entrer dans la scène.`, camera: "Plan large, lent travelling avant", sound: "Ambiance douce, quelques sons du lieu" },
       { title: "Le mouvement", image: `Un personnage ou un élément traverse le cadre. L’idée prend vie : ${cleaned}.`, camera: "Plan rapproché, mouvement fluide", sound: "La musique s’installe et accompagne le rythme" },
       { title: "La signature", image: "Le mouvement s’apaise sur une image forte. Une dernière lueur laisse une impression durable.", camera: "Léger recul, puis fondu au noir", sound: "La musique s’ouvre puis s’éteint" },
     ],
